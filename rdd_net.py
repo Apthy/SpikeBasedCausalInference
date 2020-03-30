@@ -5,9 +5,9 @@ import torch
 from rdd_layers import SpikingFA
 
 from shared_hyperparams import *
-innerparam = 1024
+
 class RDDNet:
-    def __init__(self):
+    def __init__(self,innerparam):
         self.classification_layers = []
 
         self.classification_layers.append(SpikingFA(innerparam, None, 384))
