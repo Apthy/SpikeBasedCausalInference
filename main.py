@@ -20,9 +20,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('folder_prefix', help='Prefix of folder name where data will be saved')
     parser.add_argument("-dataset", type=str, default = "FashionMNIST")
-    parser.add_argument("-innerparam", type=int, default=1024)
+    parser.add_argument("-imagew", type=int, default=32)#todo want to change this to be calculated on the fly
     parser.add_argument("-n_epochs", type=int, help="Number of epochs", default=100)
-    parser.add_argument("-batch_size", type=int, help="Batch size", default=32)
+    parser.add_argument("-batch_size", type=int, help="Batch size", default=512)
     parser.add_argument("-lr", help="Learning rate", type=float, default=0.01)
     parser.add_argument("-momentum", type=float, help="Momentum", default=0.9)
     parser.add_argument("-weight_decay", type=float, help="Weight decay", default=0)
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     folder_prefix           = "/Output/" + args.folder_prefix
     current_dataset         = args.dataset
-    innerparam              = args.innerparam
+    imagew              = args.imagew
     n_epochs                = args.n_epochs
     batch_size              = args.batch_size
     lr                      = args.lr
@@ -47,7 +47,15 @@ if __name__ == "__main__":
     rdd_every_epoch         = args.rdd_every_epoch
     use_backprop            = args.use_backprop
     info                    = args.info
+    def getInner(pixels):
+        num = np.ceil(pixels-4)
+        num = np.ceil(num/2.0)
+        num = np.ceil(num -4)
+        num = np.ceil(num/2.0)
+        print(num)
+        return int((num**2)*64)
 
+    innerparam = getInner(imagew)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     botnum = 0
     #pront(botnum,"initialised and connected to discord Device chosen:"+ device)
@@ -106,15 +114,15 @@ if __name__ == "__main__":
         train_set_2 = torchvision.datasets.KMNIST(root='../Data', train=True, download=True, transform=transform_test)
         net = ConvNet(innerparam, input_channels=1, use_backprop=use_backprop).to(device)
 
-    elif(current_dataset == "EMNIST"):
-        train_set = torchvision.datasets.EMNIST(root='../Data', train=True, download=True, transform=transform_train)
-        test_set = torchvision.datasets.EMNIST(root='../Data', train=False, download=True, transform=transform_test)
-        train_set_2 = torchvision.datasets.EMNIST(root='../Data', train=True, download=True, transform=transform_test)
+    elif(current_dataset == "USPS"):
+        train_set = torchvision.datasets.USPS(root='../Data', train=True, download=True, transform=transform_train)
+        test_set = torchvision.datasets.USPS(root='../Data', train=False, download=True, transform=transform_test)
+        train_set_2 = torchvision.datasets.USPS(root='../Data', train=True, download=True, transform=transform_test)
         net = ConvNet(innerparam, input_channels=1, use_backprop=use_backprop).to(device)
 
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=7,pin_memory=True)
-    test_loader = torch.utils.data.DataLoader(test_set, batch_size=100, shuffle=False, num_workers=7, pin_memory=True)
-    train_loader_2 = torch.utils.data.DataLoader(train_set_2, batch_size=100, shuffle=True, num_workers=7, pin_memory=True)
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=0,pin_memory=True)
+    test_loader = torch.utils.data.DataLoader(test_set, batch_size=100, shuffle=False, num_workers=0, pin_memory=True)
+    train_loader_2 = torch.utils.data.DataLoader(train_set_2, batch_size=100, shuffle=True, num_workers=0, pin_memory=True)
     
     criterion = torch.nn.CrossEntropyLoss()
 
