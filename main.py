@@ -142,7 +142,7 @@ if __name__ == "__main__":
         return 100*(1 - correct/total), loss
 
     # create the RDD net
-    rdd_net = RDDNet()
+    rdd_net = RDDNet(innerparam)
 
     if folder_prefix is not None:
         # generate a name for the folder where data will be stored
