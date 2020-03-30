@@ -19,6 +19,7 @@ if __name__ == "__main__":
     #todo run with [do rdd and rddeveryepoch] as true and onece with [dordd and use backprop] as false
     parser = argparse.ArgumentParser()
     parser.add_argument('folder_prefix', help='Prefix of folder name where data will be saved')
+    parser.add_argument("-dataset", type=str, default = "FashionMNIST")
     parser.add_argument("-n_epochs", type=int, help="Number of epochs", default=100)
     parser.add_argument("-batch_size", type=int, help="Batch size", default=32)
     parser.add_argument("-lr", help="Learning rate", type=float, default=0.01)
@@ -33,6 +34,7 @@ if __name__ == "__main__":
     args=parser.parse_args()
 
     folder_prefix           = args.folder_prefix
+    current_dataset         = args.dataset
     n_epochs                = args.n_epochs
     batch_size              = args.batch_size
     lr                      = args.lr
@@ -59,18 +61,62 @@ if __name__ == "__main__":
         transforms.ToTensor(),
         transforms.Normalize([0.5], [0.5]),
     ])
+    
+    transform_train_cifar = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
 
-    train_set = torchvision.datasets.FashionMNIST(root='../Data', train=True, download=True, transform=transform_train)
+    ])
+
+    transform_test_cifar = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+    ])
+
+    train_set       = None
+    train_loader    = None
+    test_set        = None
+    test_loader     = None
+    train_set_2     = None
+    train_loader_2  = None
+    net = None
+
+    if(current_dataset == "FashionMNIST"):
+        train_set = torchvision.datasets.FashionMNIST(root='../Data', train=True, download=True, transform=transform_train)
+        test_set = torchvision.datasets.FashionMNIST(root='../Data', train=False, download=True, transform=transform_test)
+        train_set_2 = torchvision.datasets.FashionMNIST(root='../Data', train=True, download=True, transform=transform_test)
+        net = ConvNet(input_channels=1, use_backprop=use_backprop).to(device)
+    
+    elif(current_dataset == "CIFAR10"):
+        train_set = torchvision.datasets.CIFAR10(root='../Data', train=True, download=True, transform=transform_train_cifar)
+        test_set = torchvision.datasets.CIFAR10(root='../Data', train=False, download=True, transform=transform_test_cifar)
+        train_set_2 = torchvision.datasets.CIFAR10(root='../Data', train=True, download=True, transform=transform_test_cifar)
+        net = ConvNet(input_channels=3, use_backprop=use_backprop).to(device)
+
+    elif(current_dataset == "MNIST"):
+        train_set = torchvision.datasets.MNIST(root='../Data', train=True, download=True, transform=transform_train)
+        test_set = torchvision.datasets.MNIST(root='../Data', train=False, download=True, transform=transform_test)
+        train_set_2 = torchvision.datasets.MNIST(root='../Data', train=True, download=True, transform=transform_test)
+        net = ConvNet(input_channels=1, use_backprop=use_backprop).to(device)
+
+    elif(current_dataset == "KMNIST"):
+        train_set = torchvision.datasets.KMNIST(root='../Data', train=True, download=True, transform=transform_train)
+        test_set = torchvision.datasets.KMNIST(root='../Data', train=False, download=True, transform=transform_test)
+        train_set_2 = torchvision.datasets.KMNIST(root='../Data', train=True, download=True, transform=transform_test)
+        net = ConvNet(input_channels=1, use_backprop=use_backprop).to(device)
+
+    elif(current_dataset == "EMNIST"):
+        train_set = torchvision.datasets.EMNIST(root='../Data', train=True, download=True, transform=transform_train)
+        test_set = torchvision.datasets.EMNIST(root='../Data', train=False, download=True, transform=transform_test)
+        train_set_2 = torchvision.datasets.EMNIST(root='../Data', train=True, download=True, transform=transform_test)
+        net = ConvNet(input_channels=1, use_backprop=use_backprop).to(device)
+
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=7,pin_memory=True)
-
-    test_set = torchvision.datasets.FashionMNIST(root='../Data', train=False, download=True, transform=transform_test)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=100, shuffle=False, num_workers=7, pin_memory=True)
-
-    train_set_2 = torchvision.datasets.FashionMNIST(root='../Data', train=True, download=True, transform=transform_test)
     train_loader_2 = torch.utils.data.DataLoader(train_set_2, batch_size=100, shuffle=True, num_workers=7, pin_memory=True)
-
-    net = ConvNet(input_channels=1, use_backprop=use_backprop).to(device)
-
+    
     criterion = torch.nn.CrossEntropyLoss()
 
     optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
