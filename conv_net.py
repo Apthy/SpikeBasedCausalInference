@@ -8,9 +8,9 @@ class Flatten(nn.Module):
         return x.view(x.size()[0], -1)
 
 class ConvNet(nn.Module):
-    def __init__(self, input_channels, use_backprop=False):
+    def __init__(self,inner, input_channels, use_backprop=False):
         super(ConvNet, self).__init__()
-        innerparam = 1024
+        innerparam = inner
         self.feature_layers = []
 
         Linear = LinearFA if (not use_backprop) else nn.Linear
@@ -63,3 +63,6 @@ class ConvNet(nn.Module):
         self.fc1.decay_fb_weights(weight_decay)
         self.fc2.decay_fb_weights(weight_decay)
         self.fc3.decay_fb_weights(weight_decay)
+
+    def setInnerparam(self,inparam):
+        self.innerparam = inparam

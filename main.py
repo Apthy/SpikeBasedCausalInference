@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     args=parser.parse_args()
 
-    folder_prefix           = args.folder_prefix
+    folder_prefix           = "/Output/" + args.folder_prefix
     n_epochs                = args.n_epochs
     batch_size              = args.batch_size
     lr                      = args.lr
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     botnum = 0
-    #pront(botnum,"initialised and connected to discord Device chosen:"+device)
+    #pront(botnum,"initialised and connected to discord Device chosen:"+ device)
     transform_train = transforms.Compose([
         transforms.RandomCrop(28, padding=4),
         transforms.RandomHorizontalFlip(),
@@ -60,21 +60,20 @@ if __name__ == "__main__":
         transforms.Normalize([0.5], [0.5]),
     ])
 
-    train_set = torchvision.datasets.FashionMNIST(root='../Data', train=True, download=True, transform=transform_train)
+    train_set = torchvision.datasets.MNIST(root='../Data', train=True, download=True, transform=transform_train)
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=7,pin_memory=True)
 
-    test_set = torchvision.datasets.FashionMNIST(root='../Data', train=False, download=True, transform=transform_test)
+    test_set = torchvision.datasets.MNIST(root='../Data', train=False, download=True, transform=transform_test)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=100, shuffle=False, num_workers=7, pin_memory=True)
 
-    train_set_2 = torchvision.datasets.FashionMNIST(root='../Data', train=True, download=True, transform=transform_test)
+    train_set_2 = torchvision.datasets.MNIST(root='../Data', train=True, download=True, transform=transform_test)
     train_loader_2 = torch.utils.data.DataLoader(train_set_2, batch_size=100, shuffle=True, num_workers=7, pin_memory=True)
-
-    net = ConvNet(input_channels=1, use_backprop=use_backprop).to(device)
-
+    innerparam = 1024
+    net = ConvNet(innerparam, input_channels=1, use_backprop=use_backprop).to(device)
     criterion = torch.nn.CrossEntropyLoss()
 
     optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
-    innerparam2 = 1024
+
     @lru_cache(1)
     def setDrivingRates():
         return zeros((innerparam, 1)),zeros((384, 1)),zeros((192, 1))
