@@ -7,9 +7,9 @@ import argparse
 import datetime
 import shutil
 
-from Output.conv_net import *
-from Output.rdd_net import *
-from Output.shared_hyperparams import *
+from conv_net import *
+from rdd_net import *
+from shared_hyperparams import *
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('folder_prefix', help='Prefix of folder name where data will be saved')

@@ -11,9 +11,9 @@ from numpy.random import uniform
 from numpy.linalg import norm
 from tqdm import tqdm
 #from Output.disc import pront
-from Output.conv_net import *
-from Output.rdd_net import *
-from Output.shared_hyperparams import *
+from conv_net import *
+from rdd_net import *
+from shared_hyperparams import *
 if __name__ == "__main__":
 
     #todo run with [do rdd and rddeveryepoch] as true and onece with [dordd and use backprop] as false

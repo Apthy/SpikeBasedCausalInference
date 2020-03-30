@@ -1,5 +1,5 @@
 import numpy as np
-from Output.shared_hyperparams import *
+from shared_hyperparams import *
 
 def kappa(x):
     return (np.exp(-x/(tau_L/dt)) - np.exp(-x/(tau_s/dt)))/((tau_L/dt) - (tau_s/dt))

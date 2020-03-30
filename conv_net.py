@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from Output.layers import LinearFA, Conv2dFA
+from layers import LinearFA, Conv2dFA
 
 class Flatten(nn.Module):
     def forward(self, x):

@@ -2,9 +2,9 @@ import numpy as np
 from torch.nn.parameter import Parameter
 import torch
 
-from Output.rdd_layers import SpikingFA
+from rdd_layers import SpikingFA
 
-from Output.shared_hyperparams import *
+from shared_hyperparams import *
 innerparam = 1024
 class RDDNet:
     def __init__(self):
