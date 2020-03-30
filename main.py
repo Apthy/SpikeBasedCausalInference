@@ -78,11 +78,8 @@ if __name__ == "__main__":
     ])
 
     train_set       = None
-    train_loader    = None
     test_set        = None
-    test_loader     = None
     train_set_2     = None
-    train_loader_2  = None
     net = None
 
     if(current_dataset == "FashionMNIST"):
