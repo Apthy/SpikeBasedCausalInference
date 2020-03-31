@@ -4,6 +4,8 @@ import datetime
 import os
 import shutil
 from functools import lru_cache
+from typing import List
+
 import torchvision
 import torchvision.transforms as transforms
 from numpy import save, trace, sum, zeros, sign, dot, array
@@ -14,7 +16,7 @@ from tqdm import tqdm
 from conv_net import *
 from rdd_net import *
 from shared_hyperparams import *
-
+import statistics
 if __name__ == "__main__":
 
     # todo run with [do rdd and rddeveryepoch] as true and onece with [dordd and use backprop] as false
@@ -27,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument("-lr", help="Learning rate", type=float, default=0.01)
     parser.add_argument("-momentum", type=float, help="Momentum", default=0.9)
     parser.add_argument("-weight_decay", type=float, help="Weight decay", default=0)
-    parser.add_argument("-rdd_time", type=float, help="RDD time (s)", default=90)
+    parser.add_argument("-rdd_time", type=float, help="RDD time (s)", default=10)
     parser.add_argument('-do_rdd', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-rdd_every_epoch', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-use_backprop', default=False, type=lambda x: (str(x).lower() == 'true'))
@@ -227,11 +229,13 @@ if __name__ == "__main__":
         if os.path.exists(folder):
             new: int = 1
             thereisafolder: bool = os.path.exists(f"{folder}+({new})")
-            while thereisafolder:
-                new += 1
-            os.makedirs(f"{folder} + ({new})")
-        else:
-            os.makedirs(folder)
+            if thereisafolder:
+                while thereisafolder:
+                    new += 1
+                    thereisafolder = os.path.exists(f"{folder}+({new})")
+            folder = f"{folder}+({new})"
+
+        os.makedirs(folder)
 
         # save a human-readable text file containing simulation details
         timestamp = datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")
@@ -440,8 +444,22 @@ if __name__ == "__main__":
 
     # test_err[0], test_cost[0]   = test(-1)
     # train_err[0], train_cost[0] = test(-1, train_set=True)
+    totals: List[float] = []
 
     for epoch in range(n_epochs):
+
+
+
+
+
+
+
+
+
+
+
+        initialtime = time.perf_counter()
+        initialtimep = time.process_time()
         if do_rdd and (rdd_every_epoch or epoch == 0):
             train_fb()
 
@@ -486,6 +504,7 @@ if __name__ == "__main__":
             text = f"|    Epoch {epoch + 1}/{n_epochs}. Correct: {corr_percents[0][-1]:.2f}% / {corr_percents[1][-1]:.2f}% / {corr_percents[2][-1]:.2f}%. Trace:  {self_losses[0][-1]:.2f} / {self_losses[1][-1]:.2f} / {self_losses[2][-1]:.2f}."
 
             print(text)
+
             # pront(botnum,text)
             # webhook.send(text)
             if folder is not None:
@@ -511,6 +530,23 @@ if __name__ == "__main__":
         _, _ = train(epoch)
         test_err[epoch + 1], test_cost[epoch + 1] = test(epoch)
         train_err[epoch + 1], train_cost[epoch + 1] = test(epoch, train_set=True)
+
+        totals.append(time.perf_counter() - initialtime)
+        est = statistics.mean(totals) * (n_epochs - (epoch + 1))
+
+
+        day = est // (24 * 3600)
+        est = est % (24 * 3600)
+        hour = est // 3600
+        est %= 3600
+        minutes = est // 60
+        est %= 60
+        seconds = est
+
+
+        proctime = (time.process_time() - initialtimep)
+        print("Time taken according to perf counter: " , totals[epoch] , "EST Completion in: " , f"{int(hour)}h:{int(minutes)}m:{int(seconds)}s")
+        print("time taken according to process time:" , (proctime))
 
         if folder is not None:
             save(os.path.join(folder, "train_err.npy"), train_err)
