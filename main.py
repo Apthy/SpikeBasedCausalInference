@@ -4,12 +4,13 @@ import datetime
 import os
 import shutil
 from functools import lru_cache
+from os.path import join
 from typing import List
-
+import cProfile
 import torchvision
 import torchvision.transforms as transforms
-from numpy import save, trace, sum, zeros, sign, dot, array
-from numpy.random import uniform
+from numpy import save, trace, sum, zeros, sign, dot, array, mean, concatenate, ceil
+from numpy.random import uniform, choice, poisson
 from numpy.linalg import norm
 from tqdm import tqdm
 # from Output.disc import pront
@@ -53,16 +54,17 @@ if __name__ == "__main__":
 
 
     def getInner(pixels):
-        num = np.ceil(pixels - 4)
-        num = np.ceil(num / 2.0)
-        num = np.ceil(num - 4)
-        num = np.ceil(num / 2.0)
+        num = ceil(pixels - 4)
+        num = ceil(num / 2.0)
+        num = ceil(num - 4)
+        num = ceil(num / 2.0)
         print(num)
         return int((num ** 2) * 64)
 
 
     innerparam = getInner(imagew)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(device)
     botnum = 0
     # pront(botnum,"initialised and connected to discord Device chosen:"+ device)
     transform_train = transforms.Compose([
@@ -70,7 +72,6 @@ if __name__ == "__main__":
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize([0.5], [0.5]),
-
     ])
 
     transform_test = transforms.Compose([
@@ -305,9 +306,9 @@ if __name__ == "__main__":
 
         print(text)
         # pront(botnum,text)
-        indices_1 = np.random.choice(innerparam, int(.2 * innerparam), replace=False)
-        indices_2 = np.random.choice(384, int(.2 * 384), replace=False)
-        indices_3 = np.random.choice(192, int(.2 * 192), replace=False)
+        indices_1 = choice(innerparam, int(.2 * innerparam), replace=False)
+        indices_2 = choice(384, int(.2 * 384), replace=False)
+        indices_3 = choice(192, int(.2 * 192), replace=False)
 
         driving_rates_1, driving_rates_2, driving_rates_3 = setDrivingRates()
 
@@ -315,20 +316,20 @@ if __name__ == "__main__":
         driving_rates_2[indices_2] = input_rate
         driving_rates_3[indices_3] = input_rate
 
-        driving_spike_hist_1 = np.zeros((innerparam, mem), dtype=int)
-        driving_spike_hist_2 = np.zeros((384, mem), dtype=int)
-        driving_spike_hist_3 = np.zeros((192, mem), dtype=int)
+        driving_spike_hist_1 = zeros((innerparam, mem), dtype=int)
+        driving_spike_hist_2 = zeros((384, mem), dtype=int)
+        driving_spike_hist_3 = zeros((192, mem), dtype=int)
 
-        spike_rates_1 = np.zeros(innerparam)
-        spike_rates_2 = np.zeros(384)
-        spike_rates_3 = np.zeros(192)
-        spike_rates_4 = np.zeros(10)
+        spike_rates_1 = zeros(innerparam)
+        spike_rates_2 = zeros(384)
+        spike_rates_3 = zeros(192)
+        spike_rates_4 = zeros(10)
 
         for i in range(RDD_time):
             if (i + 1) % (0.1 / dt) == 0:
-                indices_1 = np.random.choice(innerparam, int(.2 * innerparam), replace=False)
-                indices_2 = np.random.choice(384, int(.2 * 384), replace=False)
-                indices_3 = np.random.choice(192, int(.2 * 192), replace=False)
+                indices_1 = choice(innerparam, int(.2 * innerparam), replace=False)
+                indices_2 = choice(384, int(.2 * 384), replace=False)
+                indices_3 = choice(192, int(.2 * 192), replace=False)
 
                 driving_rates_1, driving_rates_2, driving_rates_3 = setDrivingRates()
 
@@ -337,13 +338,13 @@ if __name__ == "__main__":
                 driving_rates_3[indices_3] = input_rate
 
             if i < RDD_time / 3:
-                driving_spike_hist_1 = np.concatenate([driving_spike_hist_1[:, 1:], np.random.poisson(driving_rates_1)],
+                driving_spike_hist_1 = concatenate([driving_spike_hist_1[:, 1:], poisson(driving_rates_1)],
                                                       axis=-1)
             elif i < 2 * RDD_time / 3:
-                driving_spike_hist_2 = np.concatenate([driving_spike_hist_2[:, 1:], np.random.poisson(driving_rates_2)],
+                driving_spike_hist_2 = concatenate([driving_spike_hist_2[:, 1:], poisson(driving_rates_2)],
                                                       axis=-1)
             else:
-                driving_spike_hist_3 = np.concatenate([driving_spike_hist_3[:, 1:], np.random.poisson(driving_rates_3)],
+                driving_spike_hist_3 = concatenate([driving_spike_hist_3[:, 1:], poisson(driving_rates_3)],
                                                       axis=-1)
 
             if i < RDD_time / 3:
@@ -399,7 +400,7 @@ if __name__ == "__main__":
                         save(os.path.join(folder, "fb_weight_{j+1}.npy"), fb_weight)
                         save(os.path.join(folder, "beta_{j+1}.npy"), beta)
 
-                text = f"|    Time: {(i + 1) * dt}/{RDD_time * dt} s. Correct: {corr_percents[0][-1]:.2f}% / {corr_percents[1][-1]:.2f}% / {corr_percents[2][-1]:.2f}%. Trace: {self_losses[0][-1]:.2f} / {self_losses[1][-1]:.2f} / {self_losses[2][-1]:.2f}. Rates: {np.mean(spike_rates_1):.2f}Hz / {np.mean(spike_rates_2):.2f}Hz / {np.mean(spike_rates_3):.2f}Hz / {np.mean(spike_rates_4):.2f}Hz. "
+                text = f"|    Time: {(i + 1) * dt}/{RDD_time * dt} s. Correct: {corr_percents[0][-1]:.2f}% / {corr_percents[1][-1]:.2f}% / {corr_percents[2][-1]:.2f}%. Trace: {self_losses[0][-1]:.2f} / {self_losses[1][-1]:.2f} / {self_losses[2][-1]:.2f}. Rates: {mean(spike_rates_1):.2f}Hz / {mean(spike_rates_2):.2f}Hz / {mean(spike_rates_3):.2f}Hz / {mean(spike_rates_4):.2f}Hz. "
 
                 print(text)
                 # pront(botnum,text)
@@ -487,8 +488,8 @@ if __name__ == "__main__":
                 info_losses[i].append(info_loss)
 
                 if folder is not None:
-                    save(os.path.join(folder, f"weight_{i + 1}.npy"), weight)
-                    save(os.path.join(folder, f"fb_weight_{i + 1}.npy"), fb_weight)
+                    save(join(folder, f"weight_{i + 1}.npy"), weight)
+                    save(join(folder, f"fb_weight_{i + 1}.npy"), fb_weight)
 
             text = f"|    Epoch {epoch + 1}/{n_epochs}. Correct: {corr_percents[0][-1]:.2f}% / {corr_percents[1][-1]:.2f}% / {corr_percents[2][-1]:.2f}%. Trace:  {self_losses[0][-1]:.2f} / {self_losses[1][-1]:.2f} / {self_losses[2][-1]:.2f}."
 
@@ -497,24 +498,24 @@ if __name__ == "__main__":
             # pront(botnum,text)
             # webhook.send(text)
             if folder is not None:
-                save(os.path.join(folder, "correct_1.npy"), array(corr_percents[0]))
-                save(os.path.join(folder, "correct_2.npy"), array(corr_percents[1]))
-                save(os.path.join(folder, "correct_3.npy"), array(corr_percents[2]))
-                save(os.path.join(folder, "decay_1.npy"), array(decay_losses[0]))
-                save(os.path.join(folder, "decay_2.npy"), array(decay_losses[1]))
-                save(os.path.join(folder, "decay_3.npy"), array(decay_losses[2]))
-                save(os.path.join(folder, "sparse_1.npy"), array(sparse_losses[0]))
-                save(os.path.join(folder, "sparse_2.npy"), array(sparse_losses[1]))
-                save(os.path.join(folder, "sparse_3.npy"), array(sparse_losses[2]))
-                save(os.path.join(folder, "self_1.npy"), array(self_losses[0]))
-                save(os.path.join(folder, "self_2.npy"), array(self_losses[1]))
-                save(os.path.join(folder, "self_3.npy"), array(self_losses[2]))
-                save(os.path.join(folder, "amp_1.npy"), array(amp_losses[0]))
-                save(os.path.join(folder, "amp_2.npy"), array(amp_losses[1]))
-                save(os.path.join(folder, "amp_3.npy"), array(amp_losses[2]))
-                save(os.path.join(folder, "info_1.npy"), array(info_losses[0]))
-                save(os.path.join(folder, "info_2.npy"), array(info_losses[1]))
-                save(os.path.join(folder, "info_3.npy"), array(info_losses[2]))
+                save(join(folder, "correct_1.npy"), array(corr_percents[0]))
+                save(join(folder, "correct_2.npy"), array(corr_percents[1]))
+                save(join(folder, "correct_3.npy"), array(corr_percents[2]))
+                save(join(folder, "decay_1.npy"), array(decay_losses[0]))
+                save(join(folder, "decay_2.npy"), array(decay_losses[1]))
+                save(join(folder, "decay_3.npy"), array(decay_losses[2]))
+                save(join(folder, "sparse_1.npy"), array(sparse_losses[0]))
+                save(join(folder, "sparse_2.npy"), array(sparse_losses[1]))
+                save(join(folder, "sparse_3.npy"), array(sparse_losses[2]))
+                save(join(folder, "self_1.npy"), array(self_losses[0]))
+                save(join(folder, "self_2.npy"), array(self_losses[1]))
+                save(join(folder, "self_3.npy"), array(self_losses[2]))
+                save(join(folder, "amp_1.npy"), array(amp_losses[0]))
+                save(join(folder, "amp_2.npy"), array(amp_losses[1]))
+                save(join(folder, "amp_3.npy"), array(amp_losses[2]))
+                save(join(folder, "info_1.npy"), array(info_losses[0]))
+                save(join(folder, "info_2.npy"), array(info_losses[1]))
+                save(join(folder, "info_3.npy"), array(info_losses[2]))
 
         _, _ = train(epoch)
         test_err[epoch + 1], test_cost[epoch + 1] = test(epoch)
@@ -538,10 +539,10 @@ if __name__ == "__main__":
         print("time taken according to process time:" , (proctime))
 
         if folder is not None:
-            save(os.path.join(folder, "train_err.npy"), train_err)
-            save(os.path.join(folder, "train_cost.npy"), train_cost)
-            save(os.path.join(folder, "test_err.npy"), test_err)
-            save(os.path.join(folder, "test_cost.npy"), test_cost)
+            save(join(folder, "train_err.npy"), train_err)
+            save(join(folder, "train_cost.npy"), train_cost)
+            save(join(folder, "test_err.npy"), test_err)
+            save(join(folder, "test_cost.npy"), test_cost)
 
     # Measure weight symmetry one final time
     if do_rdd and rdd_every_epoch:
@@ -582,22 +583,22 @@ if __name__ == "__main__":
                 # np.save(os.path.join(folder, "beta_{}.npy".format(i+1)), beta)
 
         if folder is not None:
-            save(os.path.join(folder, "correct_1.npy"), array(corr_percents[0]))
-            save(os.path.join(folder, "correct_2.npy"), array(corr_percents[1]))
-            save(os.path.join(folder, "correct_3.npy"), array(corr_percents[2]))
-            save(os.path.join(folder, "decay_1.npy"), array(decay_losses[0]))
-            save(os.path.join(folder, "decay_2.npy"), array(decay_losses[1]))
-            save(os.path.join(folder, "decay_3.npy"), array(decay_losses[2]))
-            save(os.path.join(folder, "sparse_1.npy"), array(sparse_losses[0]))
-            save(os.path.join(folder, "sparse_2.npy"), array(sparse_losses[1]))
-            save(os.path.join(folder, "sparse_3.npy"), array(sparse_losses[2]))
-            save(os.path.join(folder, "self_1.npy"), array(self_losses[0]))
-            save(os.path.join(folder, "self_2.npy"), array(self_losses[1]))
-            save(os.path.join(folder, "self_3.npy"), array(self_losses[2]))
-            save(os.path.join(folder, "amp_1.npy"), array(amp_losses[0]))
-            save(os.path.join(folder, "amp_2.npy"), array(amp_losses[1]))
-            save(os.path.join(folder, "amp_3.npy"), array(amp_losses[2]))
-            save(os.path.join(folder, "info_1.npy"), array(info_losses[0]))
-            save(os.path.join(folder, "info_2.npy"), array(info_losses[1]))
-            save(os.path.join(folder, "info_3.npy"), array(info_losses[2]))
+            save(join(folder, "correct_1.npy"), array(corr_percents[0]))
+            save(join(folder, "correct_2.npy"), array(corr_percents[1]))
+            save(join(folder, "correct_3.npy"), array(corr_percents[2]))
+            save(join(folder, "decay_1.npy"), array(decay_losses[0]))
+            save(join(folder, "decay_2.npy"), array(decay_losses[1]))
+            save(join(folder, "decay_3.npy"), array(decay_losses[2]))
+            save(join(folder, "sparse_1.npy"), array(sparse_losses[0]))
+            save(join(folder, "sparse_2.npy"), array(sparse_losses[1]))
+            save(join(folder, "sparse_3.npy"), array(sparse_losses[2]))
+            save(join(folder, "self_1.npy"), array(self_losses[0]))
+            save(join(folder, "self_2.npy"), array(self_losses[1]))
+            save(join(folder, "self_3.npy"), array(self_losses[2]))
+            save(join(folder, "amp_1.npy"), array(amp_losses[0]))
+            save(join(folder, "amp_2.npy"), array(amp_losses[1]))
+            save(join(folder, "amp_3.npy"), array(amp_losses[2]))
+            save(join(folder, "info_1.npy"), array(info_losses[0]))
+            save(join(folder, "info_2.npy"), array(info_losses[1]))
+            save(join(folder, "info_3.npy"), array(info_losses[2]))
     # pront(botnum,"bot Halted Process Finished")

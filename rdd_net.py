@@ -1,30 +1,29 @@
-import numpy as np
-from torch.nn.parameter import Parameter
+from numpy import float32, newaxis
 import torch
 
-from rdd_layers import SpikingFA
-
 from shared_hyperparams import *
+
 
 class RDDNet:
     def __init__(self,innerparam):
         self.classification_layers = []
 
+        from rdd_layers import SpikingFA
         self.classification_layers.append(SpikingFA(innerparam, None, 384))
         self.classification_layers.append(SpikingFA(384, innerparam, 192))
         self.classification_layers.append(SpikingFA(192, 384, 10))
         self.classification_layers.append(SpikingFA(10, 192))
 
     def copy_weights_from(self, layers):
-        self.classification_layers[0].set_weights(None, None, layers[2].fb_weight.detach().cpu().numpy().astype(np.float32).T)
-        self.classification_layers[1].set_weights(layers[2].weight.detach().cpu().numpy().astype(np.float32), layers[2].bias.detach().cpu().numpy().astype(np.float32)[:, np.newaxis], layers[3].fb_weight.detach().cpu().numpy().astype(np.float32).T)
-        self.classification_layers[2].set_weights(layers[3].weight.detach().cpu().numpy().astype(np.float32), layers[3].bias.detach().cpu().numpy().astype(np.float32)[:, np.newaxis], layers[4].fb_weight.detach().cpu().numpy().astype(np.float32).T)
-        self.classification_layers[3].set_weights(layers[4].weight.detach().cpu().numpy().astype(np.float32), layers[4].bias.detach().cpu().numpy().astype(np.float32)[:, np.newaxis])
+        self.classification_layers[0].set_weights(None, None, layers[2].fb_weight.detach().cpu().numpy().astype(float32).T)
+        self.classification_layers[1].set_weights(layers[2].weight.detach().cpu().numpy().astype(float32), layers[2].bias.detach().cpu().numpy().astype(float32)[:, newaxis], layers[3].fb_weight.detach().cpu().numpy().astype(float32).T)
+        self.classification_layers[2].set_weights(layers[3].weight.detach().cpu().numpy().astype(float32), layers[3].bias.detach().cpu().numpy().astype(float32)[:, newaxis], layers[4].fb_weight.detach().cpu().numpy().astype(float32).T)
+        self.classification_layers[3].set_weights(layers[4].weight.detach().cpu().numpy().astype(float32), layers[4].bias.detach().cpu().numpy().astype(float32)[:, newaxis])
 
     def copy_weights_to(self, layers, device):
-        layers[2].fb_weight.data = torch.from_numpy(self.classification_layers[0].fb_weight.astype(np.float32).T).to(device)
-        layers[3].fb_weight.data = torch.from_numpy(self.classification_layers[1].fb_weight.astype(np.float32).T).to(device)
-        layers[4].fb_weight.data = torch.from_numpy(self.classification_layers[2].fb_weight.astype(np.float32).T).to(device)
+        layers[2].fb_weight.data = torch.from_numpy(self.classification_layers[0].fb_weight.astype(float32).T).to(device)
+        layers[3].fb_weight.data = torch.from_numpy(self.classification_layers[1].fb_weight.astype(float32).T).to(device)
+        layers[4].fb_weight.data = torch.from_numpy(self.classification_layers[2].fb_weight.astype(float32).T).to(device)
 
     def out(self, driving_spike_hist_1, driving_spike_hist_2, driving_spike_hist_3):
         self.classification_layers[0].update(None, self.classification_layers[1].spike_hist, driving_input=driving_spike_hist_1)
