@@ -25,11 +25,11 @@ if __name__ == "__main__":
     parser.add_argument("-dataset", type=str, default="FashionMNIST")
     parser.add_argument("-imagew", type=int)
     parser.add_argument("-n_epochs", type=int, help="Number of epochs", default=100)
-    parser.add_argument("-batch_size", type=int, help="Batch size", default=32)
+    parser.add_argument("-batch_size", type=int, help="Batch size", default=1024)
     parser.add_argument("-lr", help="Learning rate", type=float, default=0.01)
     parser.add_argument("-momentum", type=float, help="Momentum", default=0.9)
     parser.add_argument("-weight_decay", type=float, help="Weight decay", default=0)
-    parser.add_argument("-rdd_time", type=float, help="RDD time (s)", default=10)
+    parser.add_argument("-rdd_time", type=float, help="RDD time (s)", default=90)
     parser.add_argument('-do_rdd', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-rdd_every_epoch', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-use_backprop', default=False, type=lambda x: (str(x).lower() == 'true'))
@@ -132,10 +132,10 @@ if __name__ == "__main__":
         train_set_2 = torchvision.datasets.USPS(root='../Data', train=True, download=True, transform=transform_test)
         net = ConvNet(innerparam, input_channels=1, use_backprop=use_backprop).to(device)
 
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=23,
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=10,
                                                pin_memory=True)
-    test_loader = torch.utils.data.DataLoader(test_set, batch_size=100, shuffle=False, num_workers=23, pin_memory=True)
-    train_loader_2 = torch.utils.data.DataLoader(train_set_2, batch_size=100, shuffle=True, num_workers=23,
+    test_loader = torch.utils.data.DataLoader(test_set, batch_size=100, shuffle=False, num_workers=10, pin_memory=True)
+    train_loader_2 = torch.utils.data.DataLoader(train_set_2, batch_size=100, shuffle=True, num_workers=10,
                                                  pin_memory=True)
 
     criterion = torch.nn.CrossEntropyLoss()
@@ -267,11 +267,10 @@ if __name__ == "__main__":
 
 
     def train_fb():
+        initfbTime = time.perf_counter()
         rdd_net.reset()
-
         rdd_net.copy_weights_from([net.conv1, net.conv2, net.fc1, net.fc2, net.fc3])
-
-        RDD_time = int(rdd_time / dt)
+        RDD_time: int= int(rdd_time / dt)
 
         print(f"Performing RDD pre-training for {rdd_time} s...")
         # pront(botnum,"Performing RDD pre-training for {} s...".format(rdd_time))
@@ -447,16 +446,6 @@ if __name__ == "__main__":
     totals: List[float] = []
 
     for epoch in range(n_epochs):
-
-
-
-
-
-
-
-
-
-
 
         initialtime = time.perf_counter()
         initialtimep = time.process_time()

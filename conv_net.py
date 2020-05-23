@@ -1,13 +1,14 @@
 import torch
+import pytorch_lightning as pl
 import torch.nn as nn
 
 from layers import LinearFA, Conv2dFA
 
-class Flatten(nn.Module):
+class Flatten(pl.LightningModule):
     def forward(self, x):
         return x.view(x.size()[0], -1)
 
-class ConvNet(nn.Module):
+class ConvNet(pl.LightningModule):
     def __init__(self,inner, input_channels, use_backprop=False):
         super(ConvNet, self).__init__()
         innerparam = inner
@@ -66,3 +67,16 @@ class ConvNet(nn.Module):
 
     def setInnerparam(self,inparam):
         self.innerparam = inparam
+
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        y_hat = self(x)
+        return {'loss': F.cross_entropy(y_hat, y)}
+
+    def train_dataloader(self):
+        return DataLoader(MNIST(os.getcwd(), train=True, download=True,
+                          transform=transforms.ToTensor()), batch_size=32)
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=0.02)
