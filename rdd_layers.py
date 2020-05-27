@@ -74,6 +74,9 @@ class SpikingFA:
         # update refractory period timesteps remaining for each neuron
         self.refractory_time_left[self.refractory_time_left > 0] -= 1
 
+        # regression equation is Y_i = alpha + beta*x_i + rho*D + eta
+        # alpha is a predefined weight in hyperparams, x_i is the current input, D is the output function (so 1 or 0
+
         # calculate basal potential
         if driving_input is not None:
             p = dot(driving_input, kappas)
@@ -167,7 +170,8 @@ class SpikingFA:
         end_mask = logical_or(just_spiked_mask, almost_spiked_mask)
 
         self.beta[end_mask] = self.RDD_params[end_mask, 2]*spike_threshold + self.RDD_params[end_mask, 0] - (self.RDD_params[end_mask, 3]*spike_threshold + self.RDD_params[end_mask, 1])
-
+        gamma = self.RDD_params[end_mask, 0] + self.RDD_params[end_mask, 1]
+        self.beta[end_mask] += gamma
         self.R[end_mask] = 0
 
     def update_fb_weights(self):
