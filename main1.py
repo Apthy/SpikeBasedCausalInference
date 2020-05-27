@@ -455,7 +455,7 @@ if __name__ == "__main__":
             if folder is not None:
                 np.save(os.path.join(folder, "weight_{}.npy".format(i+1)), weight)
                 np.save(os.path.join(folder, "fb_weight_{}.npy".format(i+1)), fb_weight)
-                np.save(os.path.join(folder, "beta_{}.npy".format(i+1)), beta)
+                #np.save(os.path.join(folder, "beta_{}.npy".format(i+1)), beta)
 
         if folder is not None:
             np.save(os.path.join(folder, "correct_1.npy"), np.array(corr_percents[0]))

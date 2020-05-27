@@ -1,20 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
 pref = r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\RDD Data\Long - 0.01 - 1024 - 0.9 - 0+(5)"
-fapref = r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\Functional_Alignment\FAfashion-28032020 - 0.01 - 32 - 0.9 - 0"
+fapref = r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\Functional_Alignment\FA - 0.01 - 32 - 0.9 - 0"
 
 correct_1= np.load(pref + "\correct_1.npy")
 correct_2= np.load(pref + "\correct_2.npy")
 correct_3= np.load(pref + "\correct_3.npy")
 #plt.title("Correct"+pref)
 cor1, cor2, cor3 = [],[],[]
-length = int(len(correct_1)/10)
-def drawSignAlignment():
+factor = 20
+length = int(len(correct_1)/factor)
 
+def drawSignAlignment():
+    cor1, cor2, cor3 = [], [], []
     for i in range(length):
-        cor1.append(correct_1[10*i])
-        cor2.append(correct_2[10*i])
-        cor3.append(correct_3[10*i])
+        cor1.append(correct_1[factor*i+(factor-1)])
+        cor2.append(correct_2[factor*i+(factor-1)])
+        cor3.append(correct_3[factor*i+(factor-1)])
 
     facorrect_1= np.load(fapref + "\correct_1.npy")
     facorrect_2= np.load(fapref + "\correct_2.npy")
@@ -22,23 +24,23 @@ def drawSignAlignment():
     plt.title("FC1")
     plt.ylim(0,100)
     plt.xlim(0,length)
-    plt.plot(facorrect_1[:length])
-    plt.plot(cor1)
-    plt.legend(["FA","RDD"])
+    plt.plot(facorrect_1[:length],label='FA')
+    plt.plot(cor1,label='RDD')
+    plt.legend()
     plt.show()
     plt.title("FC2")
     plt.ylim(0,100)
     plt.xlim(0,length)
-    plt.plot(facorrect_2[:length])
-    plt.plot(cor2)
-    plt.legend(["FA","RDD"])
+    plt.plot(facorrect_2[:length],label='FA')
+    plt.plot(cor2,label='RDD')
+    plt.legend()
     plt.show()
     plt.title("FC3")
     plt.ylim(0,100)
     plt.xlim(0,length)
-    plt.plot(facorrect_3[:length])
-    plt.plot(cor3)
-    plt.legend(["FA","RDD"])
+    plt.plot(facorrect_3[:length],label='FA')
+    plt.plot(cor3,label='RDD')
+    plt.legend()
     plt.show()
 
 #plt.legend(handles=[Layer1, Layer2, Layer3])
@@ -143,23 +145,26 @@ def drawSelf():
     tself2 = []
     tself3 = []
     for i in range(length):
-        tself1.append(self_1[10*i])
-        tself2.append(self_2[10*i])
-        tself3.append(self_3[10*i])
+        tself1.append(self_1[factor*i + (factor-1)])
+        tself2.append(self_2[factor*i + (factor-1)])
+        tself3.append(self_3[factor*i + (factor-1)])
 
     plt.title("Self FC1")
-    Layer1=plt.plot(faself_1,color="r", linestyle="--")
-    Layer1=plt.plot(tself1,color="r")
+    Layer1=plt.plot(faself_1,color="r", linestyle="--",label='FA'  )
+    Layer1=plt.plot(tself1,color="r", label='RDD')
+    plt.legend()
     plt.show()
 
     plt.title("Self FC2")
-    Layer2=plt.plot(faself_2,color="r", linestyle="--")
-    Layer2=plt.plot(tself2,color="r")
+    Layer2=plt.plot(faself_2,color="r", linestyle="--",label='FA' )
+    Layer2=plt.plot(tself2,color="r",label='RDD')
+    plt.legend()
     plt.show()
 
     plt.title("Self FC3")
-    Layer3=plt.plot(faself_3,color="r", linestyle="--")
-    Layer3=plt.plot(tself3,color="r")
+    Layer3=plt.plot(faself_3,color="r", linestyle="--",label='FA' )
+    Layer3=plt.plot(tself3,color="r",label='RDD')
+    plt.legend()
     #plt.legend(handles=[Layer1, Layer2, Layer3])
     plt.show()
 
@@ -190,27 +195,26 @@ def printInfo():
     sim2 = []
     sim3 = []
     for i in range(length):
-        sim1.append(sym1[10*i])
-        sim2.append(sym2[10*i])
-        sim3.append(sym3[10*i])
+        sim1.append(sym1[factor*i+(factor-1)])
+        sim2.append(sym2[factor*i+(factor-1)])
+        sim3.append(sym3[factor*i+(factor-1)])
     plt.title("SymmLoss")
     plt.xlabel("epoch")
     plt.xlim()
     plt.ylabel("Percent")
-    plt.plot(sim1)
-    plt.plot(sim2)
-    plt.plot(sim3)
+    plt.plot(sim1,label='Layer1')
+    plt.plot(sim2,label='Layer2')
+    plt.plot(sim3,label='Layer3')
+    plt.legend()
     plt.show()
 
 def drawErr():
     RDDerr = np.load(pref + "\\train_err.npy")
     faerr = np.load(fapref + "\\train_err.npy")
-
-    plt.title("error "+ pref)
-    Layer1,=plt.plot(RDDerr[1:101],color="m")
-    Layer2,=plt.plot(faerr[1:101],color="b")
-
-    #plt.legend(handles=[Layer1, Layer2,Layer3])
+    plt.title("error "+ 'LongRDD')
+    Layer1,=plt.plot(RDDerr[1:101],color="m",label='RDD')
+    Layer2,=plt.plot(faerr[1:101],color="b",label='FA')
+    plt.legend()
     plt.show()
 
 drawSignAlignment()
