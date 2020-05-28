@@ -11,8 +11,9 @@ import torchvision.transforms as transforms
 from numpy import save, trace, sum, zeros, sign, dot, array
 from numpy.random import uniform
 from numpy.linalg import norm
+from torch.utils.data import SubsetRandomSampler
 from tqdm import tqdm
-# from Output.disc import pront
+from disc import pront
 from conv_net import *
 from rdd_net import *
 from shared_hyperparams import *
@@ -34,10 +35,11 @@ if __name__ == "__main__":
     parser.add_argument('-rdd_every_epoch', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-use_backprop', default=False, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument("-info", type=str, help="Any other information about the simulation", default="")
+    parser.add_argument("-bot", type=int,default=-1)
 
     args = parser.parse_args()
 
-    folder_prefix =r"C:\Users\grthy\PycharmProjects\DeepLearning\Output" + args.folder_prefix
+    folder_prefix =r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\\" + args.folder_prefix
     current_dataset = args.dataset
     imagew = args.imagew
     n_epochs = args.n_epochs
@@ -50,7 +52,7 @@ if __name__ == "__main__":
     rdd_every_epoch = args.rdd_every_epoch
     use_backprop = args.use_backprop
     info = args.info
-
+    bot = args.bot
 
     def getInner(pixels):
         num = np.ceil(pixels - 4)
@@ -63,8 +65,8 @@ if __name__ == "__main__":
 
     innerparam = getInner(imagew)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    botnum = 0
-    # pront(botnum,"initialised and connected to discord Device chosen:"+ device)
+
+    pront(bot,"initialised and connected to discord Device chosen:"+ device)
     transform_train = transforms.Compose([
         transforms.RandomCrop(imagew, padding=4),
         transforms.RandomHorizontalFlip(),
@@ -132,8 +134,12 @@ if __name__ == "__main__":
         train_set_2 = torchvision.datasets.USPS(root='../Data', train=True, download=True, transform=transform_test)
         net = ConvNet(innerparam, input_channels=1, use_backprop=use_backprop).to(device)
 
+    #items = 1000
+    #newdata = torch.utils.data.random_split(train_set, [items, len(train_set) - items])[0]
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=10,
                                                pin_memory=True)
+
+
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=100, shuffle=False, num_workers=10, pin_memory=True)
     train_loader_2 = torch.utils.data.DataLoader(train_set_2, batch_size=100, shuffle=True, num_workers=10,
                                                  pin_memory=True)
@@ -150,7 +156,7 @@ if __name__ == "__main__":
 
     def train(Epoch):
         print(f"\nEpoch {Epoch + 1}.")
-        # pront(f"\nEpoch {Epoch + 1}.")
+        pront(bot,f"\nEpoch {Epoch + 1}.")
         net.train()
 
         train_loss = 0
@@ -272,7 +278,7 @@ if __name__ == "__main__":
         RDD_time: int= int(rdd_time / dt)
 
         print(f"Performing RDD pre-training for {rdd_time} s...")
-        # pront(botnum,"Performing RDD pre-training for {} s...".format(rdd_time))
+        pront(bot,"Performing RDD pre-training for {} s...".format(rdd_time))
         for i in range(3):
             weight = rdd_net.classification_layers[-3 + i].weight_orig
             fb_weight = rdd_net.classification_layers[-4 + i].fb_weight
@@ -303,7 +309,7 @@ if __name__ == "__main__":
         text = f"|    Time: {0 * dt}/{RDD_time * dt} s. Correct: {corr_percents[0][-1]:.2f}% / {corr_percents[1][-1]:.2f}% / {corr_percents[2][-1]:.2f}%. Trace:  {self_losses[0][-1]:.2f} / {self_losses[1][-1]:.2f} / {self_losses[2][-1]:.2f}."
 
         print(text)
-        # pront(botnum,text)
+        pront(bot,text)
         indices_1 = np.random.choice(innerparam, int(.2 * innerparam), replace=False)
         indices_2 = np.random.choice(384, int(.2 * 384), replace=False)
         indices_3 = np.random.choice(192, int(.2 * 192), replace=False)
@@ -401,7 +407,7 @@ if __name__ == "__main__":
                 text = f"|    Time: {(i + 1) * dt}/{RDD_time * dt} s. Correct: {corr_percents[0][-1]:.2f}% / {corr_percents[1][-1]:.2f}% / {corr_percents[2][-1]:.2f}%. Trace: {self_losses[0][-1]:.2f} / {self_losses[1][-1]:.2f} / {self_losses[2][-1]:.2f}. Rates: {np.mean(spike_rates_1):.2f}Hz / {np.mean(spike_rates_2):.2f}Hz / {np.mean(spike_rates_3):.2f}Hz / {np.mean(spike_rates_4):.2f}Hz. "
 
                 print(text)
-                # pront(botnum,text)
+                pront(bot,text)
 
                 if folder is not None:
                     save(os.path.join(folder, "correct_1.npy"), array(corr_percents[0]))
@@ -493,8 +499,8 @@ if __name__ == "__main__":
 
             print(text)
 
-            # pront(botnum,text)
-            # webhook.send(text)
+            pront(bot,text)
+            #webhook.send(text)
             if folder is not None:
                 save(os.path.join(folder, "correct_1.npy"), array(corr_percents[0]))
                 save(os.path.join(folder, "correct_2.npy"), array(corr_percents[1]))
@@ -599,4 +605,4 @@ if __name__ == "__main__":
             save(os.path.join(folder, "info_1.npy"), array(info_losses[0]))
             save(os.path.join(folder, "info_2.npy"), array(info_losses[1]))
             save(os.path.join(folder, "info_3.npy"), array(info_losses[2]))
-    # pront(botnum,"bot Halted Process Finished")
+    pront(bot,"bot Halted Process Finished")

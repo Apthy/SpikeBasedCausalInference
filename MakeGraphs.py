@@ -1,14 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
-pref = r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\RDD Data\Long - 0.01 - 1024 - 0.9 - 0+(5)"
-fapref = r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\Functional_Alignment\FA - 0.01 - 32 - 0.9 - 0"
-
+#CIFAR10
+pref = r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\RDD Data\RDD - 0.01 - 128 - 0.9 - 0"
+fapref = r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\Functional_Alignment\CifarLong - 0.01 - 1024 - 0.9 - 0"
+factor = 10
+##
+##CIFAR10
+#pref = r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\RDD Data\RDDFashion - 0.01 - 32 - 0.9 - 0"
+#fapref = r"C:\Users\grthy\PycharmProjects\DeepLearning\Output\Functional_Alignment\FAfashion - 0.01 - 32 - 0.9 - 0"
+#factor = 10
+##
 correct_1= np.load(pref + "\correct_1.npy")
 correct_2= np.load(pref + "\correct_2.npy")
 correct_3= np.load(pref + "\correct_3.npy")
 #plt.title("Correct"+pref)
 cor1, cor2, cor3 = [],[],[]
-factor = 20
+
 length = int(len(correct_1)/factor)
 
 def drawSignAlignment():
@@ -23,23 +30,31 @@ def drawSignAlignment():
     facorrect_3= np.load(fapref + "\correct_3.npy")
     plt.title("FC1")
     plt.ylim(0,100)
+    plt.xlabel("epoch")
+    plt.ylabel("%Sign Alignment")
     plt.xlim(0,length)
     plt.plot(facorrect_1[:length],label='FA')
-    plt.plot(cor1,label='RDD')
+    plt.plot(cor1,label='FA FC1')
     plt.legend()
+    plt.xlabel("epoch")
+    plt.ylabel("%Sign Alignment")
     plt.show()
     plt.title("FC2")
     plt.ylim(0,100)
     plt.xlim(0,length)
     plt.plot(facorrect_2[:length],label='FA')
-    plt.plot(cor2,label='RDD')
+    plt.plot(cor2,label='Fuzzy RDD')
     plt.legend()
+    plt.xlabel("epoch")
+    plt.ylabel("%Sign Alignment")
     plt.show()
     plt.title("FC3")
+    plt.xlabel("epoch")
+    plt.ylabel("%Sign Alignment")
     plt.ylim(0,100)
     plt.xlim(0,length)
     plt.plot(facorrect_3[:length],label='FA')
-    plt.plot(cor3,label='RDD')
+    plt.plot(cor3,label='FA FC3')
     plt.legend()
     plt.show()
 
@@ -75,42 +90,54 @@ def drawWeights():
     flatfafb_weight_2=fafb_weight_2.flatten()
     flatfafb_weight_3=fafb_weight_3.flatten()
 
-    plt.title("FC1")
+    plt.title("FC1 Fuzzy")
     plt.xlabel("weight_1")
-    plt.xlim()
     plt.ylabel("fb_weight_1")
     plt.scatter(flatweight_1,flatfb_weight_1,s=1)
+    plt.xlabel("feedforward weight")
+    plt.ylabel("feedbackward weight")
     plt.show()
-    plt.title("FC2")
+    plt.title("FC2 Fuzzy")
     plt.xlabel("weight_2")
     plt.ylabel("fb_weight_2")
+    plt.xlabel("feedforward weight")
+    plt.ylabel("feedbackward weight")
     plt.scatter(flatweight_2,flatfb_weight_2,s=1)
     plt.show()
-    plt.title("FC3")
+    plt.title("FC3 Fuzzy")
     plt.xlabel("weight_3")
+
     plt.ylabel("fb_weight_3")
     plt.scatter(flatweight_3,flatfb_weight_3,s=1)
+    plt.xlabel("feedforward weight")
+    plt.ylabel("feedbackward weight")
     plt.show()
     plt.title("FC1")
     plt.xlabel("weight_1")
     plt.ylabel("fb_weight_1")
-    plt.xlim(-.2,.2)
-    plt.ylim(-0.02,0.02)
+    #plt.xlim(-0.1,0.1)
+    #plt.ylim(-0.02,0.02)
     plt.scatter(flatfaweight_1,flatfafb_weight_1,s=1, color='r')
+    plt.xlabel("feedforward weight")
+    plt.ylabel("feedbackward weight")
     plt.show()
     plt.title("FC2")
     plt.xlabel("weight_2")
-    plt.xlim(-.2,.2)
-    plt.ylim(-0.05,0.05)
+    #plt.xlim(-.2,.2)
+    #plt.ylim(-0.05,0.05)
     plt.ylabel("fb_weight_2")
     plt.scatter(flatfaweight_2,flatfafb_weight_2,s=1, color='r')
+    plt.xlabel("feedforward weight")
+    plt.ylabel("feedbackward weight")
     plt.show()
     plt.title("FC3")
-    #plt.xlim(-.2,.2)
+    #plt.xlim(-1,1)
     #plt.ylim(-0.05,0.05)
     plt.xlabel("weight_3")
     plt.ylabel("fb_weight_3")
     plt.scatter(flatfaweight_3,flatfafb_weight_3,s=1, color='r')
+    plt.xlabel("feedforward weight")
+    plt.ylabel("feedbackward weight")
     plt.show()
 #decay_1 = np.load(pref + "decay_1.npy")
 #decay_2 = np.load(pref + "decay_2.npy")
@@ -150,22 +177,27 @@ def drawSelf():
         tself3.append(self_3[factor*i + (factor-1)])
 
     plt.title("Self FC1")
-    Layer1=plt.plot(faself_1,color="r", linestyle="--",label='FA'  )
-    Layer1=plt.plot(tself1,color="r", label='RDD')
-    plt.legend()
+    plt.plot(faself_1,color="r", linestyle="--",label='FA')
+    plt.plot(tself1,color="r", label='RDD')
+    #plt.legend()
+    plt.ylabel("R-self")
+    plt.xlabel("epoch")
     plt.show()
 
     plt.title("Self FC2")
-    Layer2=plt.plot(faself_2,color="r", linestyle="--",label='FA' )
-    Layer2=plt.plot(tself2,color="r",label='RDD')
-    plt.legend()
+    plt.plot(faself_2,color="r", linestyle="--",label='FA' )
+    plt.plot(tself2,color="r",label='RDD')
+    #plt.legend()
+
+    plt.xlabel("epoch")
     plt.show()
 
     plt.title("Self FC3")
-    Layer3=plt.plot(faself_3,color="r", linestyle="--",label='FA' )
-    Layer3=plt.plot(tself3,color="r",label='RDD')
+    plt.plot(faself_3,color="r", linestyle="--",label='FA' )
+    plt.plot(tself3,color="r",label='RDD')
     plt.legend()
-    #plt.legend(handles=[Layer1, Layer2, Layer3])
+
+    plt.xlabel("epoch")
     plt.show()
 
 
@@ -211,7 +243,9 @@ def printInfo():
 def drawErr():
     RDDerr = np.load(pref + "\\train_err.npy")
     faerr = np.load(fapref + "\\train_err.npy")
-    plt.title("error "+ 'LongRDD')
+    plt.ylabel("Percent")
+    plt.xlabel("epoch")
+    plt.title("error "+ 'Cifar10')
     Layer1,=plt.plot(RDDerr[1:101],color="m",label='RDD')
     Layer2,=plt.plot(faerr[1:101],color="b",label='FA')
     plt.legend()
