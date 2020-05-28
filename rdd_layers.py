@@ -170,7 +170,7 @@ class SpikingFA:
         end_mask = logical_or(just_spiked_mask, almost_spiked_mask)
 
         self.beta[end_mask] = self.RDD_params[end_mask, 2]*spike_threshold + self.RDD_params[end_mask, 0] - (self.RDD_params[end_mask, 3]*spike_threshold + self.RDD_params[end_mask, 1])
-        gamma = self.RDD_params[end_mask, 0] + self.RDD_params[end_mask, 1]
+        gamma = self.RDD_params[end_mask, 2]*spike_threshold + self.RDD_params[end_mask, 3]*spike_threshold
         self.beta[end_mask] += gamma
         self.R[end_mask] = 0
 
